@@ -566,15 +566,6 @@
               "type": "key-value-block"
             }
           }
-        },
-        {
-          "title": "Blog Tiles",
-          "id": "blog-tiles",
-          "plugins": {
-            "da": {
-              "unsafeHTML": "<div class=\"blog-tiles\"><div><div><p>Category</p></div></div></div>"
-            }
-          }
         }
       ]
     },

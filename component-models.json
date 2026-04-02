@@ -185,6 +185,14 @@
     ]
   },
   {
+    "id": "blog-post",
+    "fields": []
+  },
+  {
+    "id": "blog-tiles",
+    "fields": []
+  },
+  {
     "id": "card",
     "fields": [
       {
@@ -231,6 +239,82 @@
         "name": "text",
         "label": "Text",
         "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "circle-carousel",
+    "fields": [
+      {
+        "component": "select",
+        "valueType": "string",
+        "name": "alignment",
+        "label": "Alignment",
+        "description": "Horizontal alignment of the carousel",
+        "value": "center",
+        "required": false,
+        "options": [
+          {
+            "name": "Left",
+            "value": "left"
+          },
+          {
+            "name": "Center",
+            "value": "center"
+          },
+          {
+            "name": "Right",
+            "value": "right"
+          }
+        ]
+      },
+      {
+        "component": "boolean",
+        "valueType": "boolean",
+        "name": "autoplay",
+        "label": "Enable Autoplay",
+        "description": "Automatically cycle through items every 4 seconds",
+        "value": true,
+        "required": false
+      },
+      {
+        "component": "number",
+        "valueType": "number",
+        "name": "itemsMobile",
+        "label": "Items Per View (Mobile)",
+        "description": "Number of circles visible on mobile screens",
+        "value": 2,
+        "required": false,
+        "validation": {
+          "numberMin": 1,
+          "numberMax": 4
+        }
+      },
+      {
+        "component": "number",
+        "valueType": "number",
+        "name": "itemsTablet",
+        "label": "Items Per View (Tablet)",
+        "description": "Number of circles visible on tablet screens",
+        "value": 4,
+        "required": false,
+        "validation": {
+          "numberMin": 2,
+          "numberMax": 6
+        }
+      },
+      {
+        "component": "number",
+        "valueType": "number",
+        "name": "itemsDesktop",
+        "label": "Items Per View (Desktop)",
+        "description": "Number of circles visible on desktop screens",
+        "value": 6,
+        "required": false,
+        "validation": {
+          "numberMin": 3,
+          "numberMax": 8
+        }
       }
     ]
   },
@@ -427,6 +511,10 @@
     ]
   },
   {
+    "id": "hero-cta",
+    "fields": []
+  },
+  {
     "id": "hero",
     "fields": [
       {
@@ -451,186 +539,6 @@
         "valueType": "string"
       }
     ]
-  },
-  {
-    "id": "product-details",
-    "fields": [
-      {
-        "component": "text",
-        "name": "defaultSku",
-        "label": "Default SKU",
-        "description": "Optional: Specify a default product SKU if this is a template page"
-      }
-    ]
-  },
-  {
-    "id": "product-list-page",
-    "fields": [
-      {
-        "component": "text",
-        "name": "urlpath",
-        "label": "URL Path",
-        "description": "URL Path of the category as defined in the catalog (not CMS)"
-      },
-      {
-        "component": "number",
-        "name": "pageSize",
-        "label": "Page Size",
-        "value": 9,
-        "description": "Number of products per page (default: 9)"
-      }
-    ]
-  },
-  {
-    "id": "product-recommendations",
-    "fields": [
-      {
-        "component": "text",
-        "name": "recId",
-        "label": "Rec ID",
-        "required": true
-      },
-      {
-        "component": "text",
-        "name": "currentSku",
-        "label": "Current SKU"
-      }
-    ]
-  },
-  {
-    "id": "targeted-block",
-    "fields": [
-      {
-        "component": "richtext",
-        "name": "content",
-        "label": "Content"
-      },
-      {
-        "component": "text",
-        "name": "customerGroups",
-        "label": "Customer Groups",
-        "valueType": "string"
-      },
-      {
-        "component": "text",
-        "name": "customerSegments",
-        "label": "Customer Segments",
-        "valueType": "string"
-      },
-      {
-        "component": "text",
-        "name": "type",
-        "label": "Type",
-        "valueType": "string"
-      },
-      {
-        "component": "text",
-        "name": "fragment",
-        "label": "Fragment",
-        "valueType": "string"
-      }
-    ]
-  },
-  {
-    "id": "video",
-    "fields": [
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "videoUrl",
-        "label": "Video URL",
-        "description": "Paste one full video URL per row. Add additional rows to create a carousel.",
-        "required": true
-      }
-    ]
-  },
-  {
-    "id": "blog-post",
-    "fields": []
-  },
-  {
-    "id": "blog-tiles",
-    "fields": []
-  },
-  {
-    "id": "circle-carousel",
-    "fields": [
-      {
-        "component": "select",
-        "valueType": "string",
-        "name": "alignment",
-        "label": "Alignment",
-        "description": "Horizontal alignment of the carousel",
-        "value": "center",
-        "required": false,
-        "options": [
-          {
-            "name": "Left",
-            "value": "left"
-          },
-          {
-            "name": "Center",
-            "value": "center"
-          },
-          {
-            "name": "Right",
-            "value": "right"
-          }
-        ]
-      },
-      {
-        "component": "boolean",
-        "valueType": "boolean",
-        "name": "autoplay",
-        "label": "Enable Autoplay",
-        "description": "Automatically cycle through items every 4 seconds",
-        "value": true,
-        "required": false
-      },
-      {
-        "component": "number",
-        "valueType": "number",
-        "name": "itemsMobile",
-        "label": "Items Per View (Mobile)",
-        "description": "Number of circles visible on mobile screens",
-        "value": 2,
-        "required": false,
-        "validation": {
-          "numberMin": 1,
-          "numberMax": 4
-        }
-      },
-      {
-        "component": "number",
-        "valueType": "number",
-        "name": "itemsTablet",
-        "label": "Items Per View (Tablet)",
-        "description": "Number of circles visible on tablet screens",
-        "value": 4,
-        "required": false,
-        "validation": {
-          "numberMin": 2,
-          "numberMax": 6
-        }
-      },
-      {
-        "component": "number",
-        "valueType": "number",
-        "name": "itemsDesktop",
-        "label": "Items Per View (Desktop)",
-        "description": "Number of circles visible on desktop screens",
-        "value": 6,
-        "required": false,
-        "validation": {
-          "numberMin": 3,
-          "numberMax": 8
-        }
-      }
-    ]
-  },
-  {
-    "id": "hero-cta",
-    "fields": []
   },
   {
     "id": "newsletter",
@@ -1134,6 +1042,51 @@
     ]
   },
   {
+    "id": "product-details",
+    "fields": [
+      {
+        "component": "text",
+        "name": "defaultSku",
+        "label": "Default SKU",
+        "description": "Optional: Specify a default product SKU if this is a template page"
+      }
+    ]
+  },
+  {
+    "id": "product-list-page",
+    "fields": [
+      {
+        "component": "text",
+        "name": "urlpath",
+        "label": "URL Path",
+        "description": "URL Path of the category as defined in the catalog (not CMS)"
+      },
+      {
+        "component": "number",
+        "name": "pageSize",
+        "label": "Page Size",
+        "value": 9,
+        "description": "Number of products per page (default: 9)"
+      }
+    ]
+  },
+  {
+    "id": "product-recommendations",
+    "fields": [
+      {
+        "component": "text",
+        "name": "recId",
+        "label": "Rec ID",
+        "required": true
+      },
+      {
+        "component": "text",
+        "name": "currentSku",
+        "label": "Current SKU"
+      }
+    ]
+  },
+  {
     "id": "promotional-hero",
     "fields": []
   },
@@ -1439,7 +1392,54 @@
     ]
   },
   {
+    "id": "targeted-block",
+    "fields": [
+      {
+        "component": "richtext",
+        "name": "content",
+        "label": "Content"
+      },
+      {
+        "component": "text",
+        "name": "customerGroups",
+        "label": "Customer Groups",
+        "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "customerSegments",
+        "label": "Customer Segments",
+        "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "type",
+        "label": "Type",
+        "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "fragment",
+        "label": "Fragment",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
     "id": "top-banner",
     "fields": []
+  },
+  {
+    "id": "video",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "videoUrl",
+        "label": "Video URL",
+        "description": "Paste one full video URL per row. Add additional rows to create a carousel.",
+        "required": true
+      }
+    ]
   }
 ]
