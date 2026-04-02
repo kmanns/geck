@@ -118,5 +118,11 @@
     "components": [
       "text"
     ]
+  },
+  {
+    "id": "video",
+    "components": [
+      "video-item"
+    ]
   }
 ]

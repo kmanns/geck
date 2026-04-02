@@ -4,12 +4,25 @@
       "title": "Video",
       "id": "video",
       "model": "video",
+      "filter": "video",
       "plugins": {
         "da": {
           "rows": 1,
+          "columns": 1
+        }
+      }
+    },
+    {
+      "title": "Video Item",
+      "id": "video-item",
+      "model": "video-item",
+      "plugins": {
+        "da": {
+          "name": "video-item",
+          "rows": 1,
           "columns": 1,
           "fields": [
-            { "name": "videoUrl", "selector": "div>div>a[href]" }
+            { "name": "videoUrl", "selector": "div:nth-child(1)" }
           ]
         }
       }
@@ -17,7 +30,7 @@
   ],
   "models": [
     {
-      "id": "video",
+      "id": "video-item",
       "fields": [
         {
           "component": "text",
@@ -30,5 +43,12 @@
       ]
     }
   ],
-  "filters": []
+  "filters": [
+    {
+      "id": "video",
+      "components": [
+        "video-item"
+      ]
+    }
+  ]
 }

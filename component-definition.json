@@ -264,14 +264,27 @@
           "title": "Video",
           "id": "video",
           "model": "video",
+          "filter": "video",
           "plugins": {
             "da": {
+              "rows": 1,
+              "columns": 1
+            }
+          }
+        },
+        {
+          "title": "Video Item",
+          "id": "video-item",
+          "model": "video-item",
+          "plugins": {
+            "da": {
+              "name": "video-item",
               "rows": 1,
               "columns": 1,
               "fields": [
                 {
                   "name": "videoUrl",
-                  "selector": "div>div>a[href]"
+                  "selector": "div:nth-child(1)"
                 }
               ]
             }

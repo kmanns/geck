@@ -1430,7 +1430,7 @@
     "fields": []
   },
   {
-    "id": "video",
+    "id": "video-item",
     "fields": [
       {
         "component": "text",

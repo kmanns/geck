@@ -17,7 +17,7 @@ The Video block embeds one or more video links in a responsive 16:9 frame. A sin
 
 - `video.js`: Parses authored URLs and renders either a single embed or a multi-slide carousel
 - `video.css`: Styles the responsive frame, carousel controls, and indicator dots
-- `_video.json`: Defines the DA/Universal Editor authoring model and `videoUrl` input field
+- `_video.json`: Defines the DA/Universal Editor container model, repeatable video items, and the `videoUrl` input field
 
 ## da.live Authoring
 
@@ -27,7 +27,7 @@ The Video block embeds one or more video links in a responsive 16:9 frame. A sin
 
 ### DA Usage
 
-In `da.live`, add a Video block from the section insert menu and populate the `Video URL` field with a URL such as:
+In `da.live`, add a Video block from the section insert menu, select a Video item row, and populate the `Video URL` field with a URL such as:
 
 - `https://www.youtube.com/watch?v=dQw4w9WgXcQ`
 - `https://youtu.be/dQw4w9WgXcQ`
@@ -36,7 +36,9 @@ In `da.live`, add a Video block from the section insert menu and populate the `V
 ## Authoring Notes
 
 - The Video block is available in Universal Editor within `da.live`.
-- The authoring shape is a single `videoUrl` field repeated across rows as needed.
+- The Video block now uses repeatable Video items in Universal Editor.
+- Use the `+` button on the Video block to add another Video item row.
+- Each Video item exposes a single `Video URL` field.
 - The carousel activates automatically when more than one valid video URL row is present.
 - Existing single-video DA content remains supported.
 - Use full YouTube links for the best experience; direct embeddable player URLs also work.
