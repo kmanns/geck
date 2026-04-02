@@ -22,13 +22,26 @@
           "rows": 1,
           "columns": 1,
           "fields": [
-            { "name": "videoUrl", "selector": "div:nth-child(1)" }
+            { "name": "videoUrl", "selector": "div:nth-child(1)>a[href]" }
           ]
         }
       }
     }
   ],
   "models": [
+    {
+      "id": "video",
+      "fields": [
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "videoUrl",
+          "label": "Video URL",
+          "description": "Paste the first video URL here. Use the + button to add more video items for a carousel.",
+          "required": true
+        }
+      ]
+    },
     {
       "id": "video-item",
       "fields": [
@@ -37,7 +50,7 @@
           "valueType": "string",
           "name": "videoUrl",
           "label": "Video URL",
-          "description": "Paste one full video URL per row. Add additional rows to create a carousel.",
+          "description": "Paste an additional video URL for the carousel.",
           "required": true
         }
       ]
