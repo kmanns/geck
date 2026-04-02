@@ -23,8 +23,8 @@
           "component": "text",
           "valueType": "string",
           "name": "videoUrl",
-          "label": "YouTube URL",
-          "description": "Paste a full video URL. Additional authored URL rows are supported for carousel use cases.",
+          "label": "Video URL",
+          "description": "Paste one full video URL per row. Add additional rows to create a carousel.",
           "required": true
         }
       ]
