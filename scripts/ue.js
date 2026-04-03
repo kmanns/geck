@@ -11,10 +11,11 @@
  */
 
 import { showSlide } from '../blocks/carousel/carousel.js';
+import { showVideoSlide } from '../blocks/video/video.js';
 import { moveInstrumentation } from './ue-utils.js';
 
 const setupObservers = () => {
-  const mutatingBlocks = document.querySelectorAll('div.cards, div.carousel, div.accordion');
+  const mutatingBlocks = document.querySelectorAll('div.cards, div.carousel, div.accordion, div.video');
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (mutation.type === 'childList' && mutation.target.tagName === 'DIV') {
@@ -73,6 +74,33 @@ const setupObservers = () => {
               }
             }
             break;
+          case 'video': {
+            const removedVideoItems = [...removedElements].filter((node) => (
+              node.tagName === 'DIV'
+              && node.attributes['data-aue-component']?.value === 'video-item'
+            ));
+
+            if (!removedVideoItems.length) {
+              break;
+            }
+
+            const singleFrame = [...addedElements].find((node) => (
+              node.tagName === 'DIV' && node.classList.contains('video-frame')
+            ));
+
+            if (singleFrame && removedVideoItems.length === 1) {
+              moveInstrumentation(removedVideoItems[0], singleFrame);
+              break;
+            }
+
+            const renderedItems = mutation.target.querySelectorAll('.video-slide, .video-frame');
+            removedVideoItems.forEach((item, index) => {
+              if (renderedItems[index]) {
+                moveInstrumentation(item, renderedItems[index]);
+              }
+            });
+            break;
+          }
           default:
             break;
         }
@@ -126,6 +154,13 @@ const setupUEEventHandlers = () => {
               showSlide(blockEl, index);
             }
             break;
+          case 'video': {
+            const videoIndex = parseInt(element.getAttribute('data-video-index'), 10);
+            if (!Number.isNaN(videoIndex)) {
+              showVideoSlide(blockEl, videoIndex);
+            }
+            break;
+          }
           case 'tabs':
             if (element === block) {
               return;

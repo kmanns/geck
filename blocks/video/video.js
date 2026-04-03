@@ -1,3 +1,5 @@
+import { IS_UE } from '../../scripts/commerce.js';
+
 function getYouTubeId(input) {
   if (!input) return '';
 
@@ -58,7 +60,7 @@ function getEmbedUrl(input) {
   return normalizedUrl;
 }
 
-function collectEntriesFromElement(element, entries) {
+function collectEntriesFromElement(element, entries, preserveRaw = false) {
   const links = [...element.querySelectorAll('a[href]')];
 
   if (links.length) {
@@ -69,21 +71,34 @@ function collectEntriesFromElement(element, entries) {
           url: normalizedUrl,
           label: link.textContent.trim() || normalizedUrl,
         });
+      } else if (preserveRaw) {
+        entries.push({
+          url: link.getAttribute('href') || '',
+          label: link.textContent.trim() || 'Video URL',
+        });
       }
     });
     return;
   }
 
-  element.textContent
+  const values = element.textContent
     .split('\n')
     .map((value) => value.trim())
-    .filter(Boolean)
-    .forEach((url) => {
-      const normalizedUrl = normalizeVideoUrl(url);
-      if (normalizedUrl) {
-        entries.push({ url: normalizedUrl, label: normalizedUrl });
-      }
-    });
+    .filter(Boolean);
+
+  if (!values.length && preserveRaw) {
+    entries.push({ url: '', label: 'Video URL' });
+    return;
+  }
+
+  values.forEach((url) => {
+    const normalizedUrl = normalizeVideoUrl(url);
+    if (normalizedUrl) {
+      entries.push({ url: normalizedUrl, label: normalizedUrl });
+    } else if (preserveRaw) {
+      entries.push({ url, label: url });
+    }
+  });
 }
 
 function getVideoEntries(block) {
@@ -92,14 +107,18 @@ function getVideoEntries(block) {
 
   rows.forEach((row) => {
     const cells = [...row.children];
+    const initialLength = entries.length;
 
     if (cells.length > 1) {
       // Support DA key/value rows such as "videoUrl | https://youtube..."
-      cells.slice(1).forEach((cell) => collectEntriesFromElement(cell, entries));
+      cells.slice(1).forEach((cell) => collectEntriesFromElement(cell, entries, IS_UE));
+      if (IS_UE && entries.length === initialLength) {
+        entries.push({ url: '', label: 'Video URL' });
+      }
       return;
     }
 
-    collectEntriesFromElement(cells[0] || row, entries);
+    collectEntriesFromElement(cells[0] || row, entries, IS_UE);
   });
 
   return entries;
@@ -148,6 +167,17 @@ function updateCarousel(block, track, slides, indicators, index) {
   });
 }
 
+export function showVideoSlide(block, index = 0) {
+  const track = block.querySelector('.video-carousel-track');
+  if (!track) return;
+
+  const slides = [...track.children];
+  const indicators = [...block.querySelectorAll('.video-carousel-indicator')];
+  if (!slides.length) return;
+
+  updateCarousel(block, track, slides, indicators, index);
+}
+
 export default function decorate(block) {
   const entries = getVideoEntries(block);
 
@@ -157,7 +187,11 @@ export default function decorate(block) {
     return;
   }
 
-  const frames = entries.map((entry) => createVideoFrame(entry));
+  const frames = entries.map((entry, index) => {
+    const frame = createVideoFrame(entry);
+    frame.dataset.videoIndex = String(index);
+    return frame;
+  });
 
   if (frames.length === 1) {
     block.replaceChildren(frames[0]);
@@ -180,6 +214,7 @@ export default function decorate(block) {
   frames.forEach((frame, index) => {
     const slide = document.createElement('div');
     slide.className = 'video-slide';
+    slide.dataset.videoIndex = String(index);
     slide.append(frame);
     track.append(slide);
 
