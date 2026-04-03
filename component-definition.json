@@ -267,8 +267,15 @@
           "filter": "video",
           "plugins": {
             "da": {
+              "name": "video",
               "rows": 1,
-              "columns": 1
+              "columns": 1,
+              "fields": [
+                {
+                  "name": "videoUrl",
+                  "selector": "div>div"
+                }
+              ]
             }
           }
         },
@@ -284,7 +291,7 @@
               "fields": [
                 {
                   "name": "videoUrl",
-                  "selector": "div:nth-child(1)>a[href]"
+                  "selector": "div:nth-child(1)"
                 }
               ]
             }
