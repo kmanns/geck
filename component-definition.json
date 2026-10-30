@@ -17,10 +17,21 @@
         {
           "title": "Image",
           "id": "image",
+          "model": "image",
           "plugins": {
             "da": {
               "name": "image",
-              "type": "image"
+              "type": "image",
+              "fields": [
+                {
+                  "name": "imageAlt",
+                  "selector": "img[alt]"
+                },
+                {
+                  "name": "image",
+                  "selector": "img[src]"
+                }
+              ]
             }
           }
         }
@@ -261,43 +272,6 @@
           }
         },
         {
-          "title": "Video",
-          "id": "video",
-          "model": "video",
-          "filter": "video",
-          "plugins": {
-            "da": {
-              "name": "video",
-              "rows": 1,
-              "columns": 1,
-              "fields": [
-                {
-                  "name": "videoUrl",
-                  "selector": "div>div"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "title": "Video Item",
-          "id": "video-item",
-          "model": "video-item",
-          "plugins": {
-            "da": {
-              "name": "video-item",
-              "rows": 1,
-              "columns": 1,
-              "fields": [
-                {
-                  "name": "videoUrl",
-                  "selector": "div:nth-child(1)"
-                }
-              ]
-            }
-          }
-        },
-        {
           "title": "Commerce Account Header",
           "id": "commerce-account-header",
           "model": "commerce-account-header",
@@ -470,6 +444,17 @@
           }
         },
         {
+          "title": "Commerce Order Comments",
+          "id": "commerce-order-comments",
+          "model": "commerce-order-comments",
+          "plugins": {
+            "da": {
+              "rows": 1,
+              "columns": 2
+            }
+          }
+        },
+        {
           "title": "Commerce Order Cost Summary",
           "id": "commerce-order-cost-summary",
           "model": "commerce-order-cost-summary",
@@ -584,18 +569,6 @@
           "plugins": {
             "da": {
               "type": "key-value-block"
-            }
-          }
-        },
-        {
-          "title": "Catalog Menu",
-          "id": "catalog-menu",
-          "plugins": {
-            "da": {
-              "name": "catalog-menu",
-              "rows": 1,
-              "columns": 1,
-              "unsafeHTML": "<div class=\"catalog-menu\"><div><div></div></div></div>"
             }
           }
         }

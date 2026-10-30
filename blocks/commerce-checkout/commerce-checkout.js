@@ -8,6 +8,9 @@ import { initReCaptcha } from '@dropins/tools/recaptcha.js';
 // Order Dropin Modules
 import * as orderApi from '@dropins/storefront-order/api.js';
 
+// Account Dropin Modules
+import { getCompanyAddressBook } from '@dropins/storefront-account/api.js';
+
 // Checkout Dropin Libraries
 import {
   createScopedSelector,
@@ -17,17 +20,14 @@ import {
 } from '@dropins/storefront-checkout/lib/utils.js';
 
 // Payment Services Dropin
-import { PaymentMethodCode } from '@dropins/storefront-payment-services/api.js';
+import * as paymentsApi from '@dropins/storefront-payment-services/api.js';
 
 // Block Utilities
 import { getConfigValue } from '@dropins/tools/lib/aem/configs.js';
-import { readBlockConfig } from '../../scripts/aem.js';
 import { buildOrderDetailsUrl, displayOverlaySpinner, removeOverlaySpinner } from './utils.js';
 
 // Fragment functions
 import { createCheckoutFragment, selectors } from './fragments.js';
-import { createAgreementController, normalizeAgreementConfig } from './agreement.js';
-import { renderAgreementGate } from './agreement-ui.js';
 
 // Container functions
 import {
@@ -64,7 +64,7 @@ import {
 import { rootLink, CUSTOMER_PO_DETAILS_PATH, ORDER_DETAILS_PATH } from '../../scripts/commerce.js';
 
 // Initializers
-import '../../scripts/initializers/account.js';
+import { isCompanyAddressBookEnabled } from '../../scripts/initializers/account.js';
 import '../../scripts/initializers/checkout.js';
 import '../../scripts/initializers/order.js';
 import '../../scripts/initializers/payment-services.js';
@@ -84,8 +84,10 @@ function redirectToCartIfEmpty(cartData) {
 
 export default async function decorate(block) {
   const isB2BEnabled = getConfigValue('commerce-b2b-enabled');
+  // Memoized per page load and already resolved by the checkout initializer, so
+  // this awaits nothing in practice.
+  const isAddressBookEnabled = isB2BEnabled && (await isCompanyAddressBookEnabled());
   const permissions = events.lastPayload('auth/permissions');
-  const agreementConfig = normalizeAgreementConfig(readBlockConfig(block));
 
   let b2bPoApi = null;
   let b2bIsPoEnabled = false;
@@ -119,7 +121,6 @@ export default async function decorate(block) {
 
   const shippingFormRef = { current: null };
   const billingFormRef = { current: null };
-  const creditCardFormRef = { current: null };
   const loaderRef = { current: null };
 
   events.on('order/placed', () => {
@@ -136,6 +137,7 @@ export default async function decorate(block) {
   // Get all checkout elements using centralized selectors
   const $content = getElement(selectors.checkout.content);
   const $loader = getElement(selectors.checkout.loader);
+  const $loaderStatus = getElement(selectors.checkout.loaderStatus);
   const $mergedCartBanner = getElement(selectors.checkout.mergedCartBanner);
   const $heading = getElement(selectors.checkout.heading);
   const $serverError = getElement(selectors.checkout.serverError);
@@ -148,77 +150,50 @@ export default async function decorate(block) {
   const $billingForm = getElement(selectors.checkout.billingForm);
   const $orderSummary = getElement(selectors.checkout.orderSummary);
   const $cartSummary = getElement(selectors.checkout.cartSummary);
-  const $agreement = getElement(selectors.checkout.agreement);
   const $placeOrder = getElement(selectors.checkout.placeOrder);
   const $giftOptions = getElement(selectors.checkout.giftOptions);
   const $termsAndConditions = getElement(selectors.checkout.termsAndConditions);
 
-  block.textContent = '';
   block.appendChild(checkoutFragment);
 
-  let latestCartData = cartData;
-  let latestCheckoutData = events.lastPayload('checkout/initialized') || null;
-  let placeOrderApi;
-
-  const agreementController = createAgreementController(agreementConfig);
-  const agreementGate = renderAgreementGate($agreement, {
-    controller: agreementController,
-    getContext: () => ({
-      cartData: latestCartData,
-      checkoutData: latestCheckoutData,
-    }),
-  });
-
-  const updatePlaceOrderState = () => {
-    if (!placeOrderApi?.setProps) return;
-    placeOrderApi.setProps({
-      disabled: agreementController.config.enabled && !agreementController.getState().signed,
-    });
-  };
-
-  agreementController.subscribe(() => {
-    updatePlaceOrderState();
-  });
-
-  const handleValidation = async () => {
-    const formsValid = validateForms([
+  const handleValidation = () => {
+    const isValid = validateForms([
       { name: LOGIN_FORM_NAME },
       { name: SHIPPING_FORM_NAME, ref: shippingFormRef },
       { name: BILLING_FORM_NAME, ref: billingFormRef },
       { name: PURCHASE_ORDER_FORM_NAME },
       { name: TERMS_AND_CONDITIONS_FORM_NAME },
     ]);
-
-    if (!formsValid) return false;
-    return agreementController.validate({
-      cartData: latestCartData,
-      checkoutData: latestCheckoutData,
-    });
+    return isValid;
   };
 
-  const handlePlaceOrder = async ({ cartId, code, quoteId }) => {
-    const agreementValid = await agreementController.validate({
-      cartId,
-      quoteId,
-      cartData: latestCartData,
-      checkoutData: latestCheckoutData,
-    });
-    if (!agreementValid) return;
+  const trySubmitPaymentServicesCreditCard = async () => {
+    try {
+      await paymentsApi.submitCreditCard();
+      return true;
+    } catch (error) {
+      switch (error.code) {
+        case 'payment-services/credit-card-form-not-rendered':
+          console.error('Credit card form not rendered.');
+          return false;
+        case 'payment-services/credit-card-form-invalid':
+          // Credit card form invalid; abort order placement
+          return false;
+        default:
+          throw error;
+      }
+    }
+  };
 
-    await displayOverlaySpinner(loaderRef, $loader);
+  const handlePlaceOrder = async ({ cartId, code }) => {
+    await displayOverlaySpinner(loaderRef, $loader, $loaderStatus);
     try {
       // Payment Services credit card
-      if (code === PaymentMethodCode.CREDIT_CARD) {
-        if (!creditCardFormRef.current) {
-          console.error('Credit card form not rendered.');
+      if (code === paymentsApi.PaymentMethodCode.CREDIT_CARD) {
+        const success = await trySubmitPaymentServicesCreditCard();
+        if (!success) {
           return;
         }
-        if (!creditCardFormRef.current.validate()) {
-          // Credit card form invalid; abort order placement
-          return;
-        }
-        // Submit Payment Services credit card form
-        await creditCardFormRef.current.submit();
       }
 
       const shouldPlacePurchaseOrder = isB2BEnabled && b2bIsPoEnabled && b2bPoApi;
@@ -232,17 +207,55 @@ export default async function decorate(block) {
       console.error(error);
       throw error;
     } finally {
-      removeOverlaySpinner(loaderRef, $loader);
+      removeOverlaySpinner(loaderRef, $loader, $loaderStatus);
     }
   };
 
   // First, render the place order component
-  placeOrderApi = await renderPlaceOrder($placeOrder, {
+  const placeOrderContainer = await renderPlaceOrder($placeOrder, {
     handleValidation,
     handlePlaceOrder,
     b2bIsPoEnabled,
   });
-  updatePlaceOrderState();
+
+  // Place Order stays disabled until the company address book has been read.
+  // The drop-in cannot judge B2B addresses on its own, and the answer arrives
+  // asynchronously — enabling first would briefly offer a button that submits an
+  // order the backend rejects.
+  if (isB2BEnabled) {
+    placeOrderContainer.setProps((prevProps) => ({ ...prevProps, disabled: true }));
+
+    (async () => {
+      try {
+        const companyAddressBook = await getCompanyAddressBook();
+        const addressBookEnabled = Boolean(companyAddressBook?.addressBookEnabled);
+        const items = companyAddressBook?.addresses?.items ?? [];
+        const hasShippingAddress = items.some((item) => item.addressType === 'SHIPPING');
+        const hasBillingAddress = items.some((item) => item.addressType === 'BILLING');
+        const customShippingAllowed = Boolean(
+          companyAddressBook?.addressBookCustomShippingAddressEnabled,
+        );
+
+        // A missing shipping address only blocks checkout when the company also
+        // forbids one-time addresses: allow them and the customer types one in.
+        // Billing has no such escape hatch. A company without an address book is
+        // not gated at all.
+        const shippingMissing = !hasShippingAddress && !customShippingAllowed;
+        const shouldDisablePlaceOrder = addressBookEnabled
+          && (shippingMissing || !hasBillingAddress);
+
+        placeOrderContainer.setProps((prevProps) => ({
+          ...prevProps,
+          disabled: shouldDisablePlaceOrder,
+        }));
+      } catch (error) {
+        // Fail open: the gate only applies to companies that run an address book.
+        // eslint-disable-next-line no-console
+        console.error('Checkout: could not read the company address book — leaving Place Order enabled', error);
+        placeOrderContainer.setProps((prevProps) => ({ ...prevProps, disabled: false }));
+      }
+    })();
+  }
 
   // Render the remaining containers
   const [
@@ -273,11 +286,14 @@ export default async function decorate(block) {
 
     renderShippingAddressFormSkeleton($shippingForm),
 
-    renderBillToShippingAddress($billToShipping),
+    // Hidden only for a company running the address book, which picks billing
+    // from its own address list. B2C customers and companies without the address
+    // book keep the checkbox.
+    renderBillToShippingAddress($billToShipping, !isAddressBookEnabled),
 
     renderShippingMethods($delivery),
 
-    renderPaymentMethods($paymentMethods, creditCardFormRef),
+    renderPaymentMethods($paymentMethods),
 
     renderBillingAddressFormSkeleton($billingForm),
 
@@ -294,7 +310,7 @@ export default async function decorate(block) {
     await initReCaptcha(0);
     if (data.isGuest) await displayGuestAddressForms(data);
     else {
-      removeOverlaySpinner(loaderRef, $loader);
+      removeOverlaySpinner(loaderRef, $loader, $loaderStatus);
       await displayCustomerAddressForms(data);
     }
   }
@@ -349,22 +365,7 @@ export default async function decorate(block) {
 
   async function handleCheckoutUpdated(data) {
     if (!data) return;
-    latestCheckoutData = data;
-    await agreementController.syncWithContext({
-      cartData: latestCartData,
-      checkoutData: latestCheckoutData,
-    });
-    updatePlaceOrderState();
     await initializeCheckout(data);
-  }
-
-  function handleCartUpdated(data) {
-    latestCartData = data;
-    redirectToCartIfEmpty(data);
-    agreementController.syncWithContext({
-      cartData: latestCartData,
-      checkoutData: latestCheckoutData,
-    }).catch(console.error);
   }
 
   function handleAuthenticated(authenticated) {
@@ -391,7 +392,6 @@ export default async function decorate(block) {
     // Clear address form data
     sessionStorage.removeItem(SHIPPING_ADDRESS_DATA_KEY);
     sessionStorage.removeItem(BILLING_ADDRESS_DATA_KEY);
-    agreementController.clear();
 
     const url = buildOrderDetailsUrl(orderData);
 
@@ -404,7 +404,6 @@ export default async function decorate(block) {
     // Clear address form data
     sessionStorage.removeItem(SHIPPING_ADDRESS_DATA_KEY);
     sessionStorage.removeItem(BILLING_ADDRESS_DATA_KEY);
-    agreementController.clear();
 
     const url = rootLink(`${CUSTOMER_PO_DETAILS_PATH}?poRef=${poData?.uid}`);
 
@@ -420,7 +419,7 @@ export default async function decorate(block) {
   events.on('checkout/updated', handleCheckoutUpdated);
   events.on('checkout/values', handleCheckoutValues);
   events.on('order/placed', handleOrderPlaced);
-  events.on('cart/initialized', handleCartUpdated, { eager: true });
-  events.on('cart/data', handleCartUpdated);
+  events.on('cart/initialized', redirectToCartIfEmpty, { eager: true });
+  events.on('cart/data', redirectToCartIfEmpty);
   events.on('purchase-order/placed', handlePurchaseOrderPlaced);
 }

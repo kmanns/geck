@@ -11,6 +11,7 @@ export const selectors = Object.freeze({
   checkout: {
     content: '.checkout__content',
     loader: '.checkout__loader',
+    loaderStatus: '.checkout__loader-status',
     mergedCartBanner: '.checkout__merged-cart-banner',
     heading: '.checkout__heading',
     serverError: '.checkout__server-error',
@@ -23,7 +24,6 @@ export const selectors = Object.freeze({
     billingForm: '.checkout__billing-form',
     orderSummary: '.checkout__order-summary',
     cartSummary: '.checkout__cart-summary',
-    agreement: '.checkout__agreement',
     placeOrder: '.checkout__place-order',
     giftOptions: '.checkout__gift-options',
     termsAndConditions: '.checkout__terms-and-conditions',
@@ -44,6 +44,7 @@ export function createCheckoutFragment() {
   return createFragment(`
     <div class="checkout__wrapper">
       <div class="checkout__loader"></div>
+      <div class="checkout__loader-status" role="status" aria-live="polite"></div>
       <div class="checkout__content">
         <div class="checkout__merged-cart-banner"></div>
         <div class="checkout__main">
@@ -57,7 +58,6 @@ export function createCheckoutFragment() {
           <div class="checkout__payment-methods ${CHECKOUT_BLOCK}"></div>
           <div class="checkout__billing-form ${CHECKOUT_BLOCK}"></div>
           <div class="checkout__terms-and-conditions ${CHECKOUT_BLOCK}"></div>
-          <div class="checkout__agreement ${CHECKOUT_BLOCK}"></div>
           <div class="checkout__place-order ${CHECKOUT_BLOCK}"></div>
         </div>
         <div class="checkout__aside">
