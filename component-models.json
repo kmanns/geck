@@ -1454,5 +1454,9 @@
         "required": true
       }
     ]
+  },
+  {
+    "id": "catalog-menu",
+    "fields": []
   }
 ]
